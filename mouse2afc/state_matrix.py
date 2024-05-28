@@ -320,9 +320,6 @@ class StateMatrix(StateMachine):
             reward_valve = []
         else:
             reward_valve = [('Valve', center_valve)]
-            print(f'OTHER REWARD = {reward_valve}')
-        print(f'REWARD = {reward_valve}')
-        print(f'Primary experiment type: {task_parameters.primary_experiment_type}')
         
         reward_center_port = iff(task_parameters.reward_after_min_sampling,
                                reward_valve + stop_stimulus,
