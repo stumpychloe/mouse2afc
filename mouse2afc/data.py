@@ -30,6 +30,9 @@ from  mouse2afc.utils import calc_dots_coherence
 from  mouse2afc.utils import controlled_random
 from  mouse2afc.utils import isnan
 
+import matplotlib.pyplot as plt
+from mouse2afc.task_parameters import TaskParameters
+
 logger = logging.getLogger(__name__)
 
 NUM_OF_TRIALS = 800 #This can be changed. 800 is arbitrary
@@ -96,6 +99,29 @@ class CustomData:
         self.raw_data = raw_data
         self.trials = Trials(task_parameters)
         self.DVs_already_generated = 0
+
+        config_file=None
+        self._task_parameters = TaskParameters(
+        file_=config_file).task_parameters
+
+        #plot
+        self.mot1 = 0
+        self.mot2 = 0
+        self.reward = 0
+        self.trial = 0
+        self.total = 0
+        self.rew_count = []
+        self.trial_count = []
+
+        self.fig, self.ax = plt.subplots()
+        self.line, = self.ax.plot([], [], label="Water",marker='o', linestyle='-', color='b')
+        print(f'self.line type: {type(self.line)}')
+        self.ax.set_xlabel("Trials")
+        self.ax.set_ylabel("Water Amount")
+        self.ax.set_title("Trials vs. Amount of Water Delivered")
+        self.ax.legend()
+        plt.ion()
+        plt.show()
 
     def assign_future_trials(self,start_from,num_trials_to_generate):
         "Assigns left_rewarded as true or false for future trials "
@@ -729,7 +755,32 @@ class CustomData:
         # GUI sync doesn't complain
         self.task_parameters.is_catch = iff(
             self.trials.catch_trial[i_trial + 1], 'true', 'false')
-
+        reward_amount = self._task_parameters.get('reward_amount', 'default_value')
+        prestim_reward_amount = self._task_parameters.get('pre_stim_delay_cntr_reward', 'default_value')
+        center_reward_amount = self._task_parameters.get('center_port_rew_amount', 'default_value')
+        if 'Reward' in states_visited_this_trial_names:
+            self.reward += (1 * reward_amount)
+        if 'PreStimReward' in states_visited_this_trial_names:
+            self.mot1 += (1 * prestim_reward_amount)
+        if 'CenterPortRewardDelivery' in states_visited_this_trial_names:
+            self.mot2 += (1 * center_reward_amount)
+        if 'ITI_Signal' in states_visited_this_trial_names:
+            self.trial += 1
+        self.total = self.reward + self.mot1 + self.mot2
+        self.rew_count.append(self.total)
+        self.trial_count.append(self.trial)
+        print(f'TRI = {self.trial_count}')
+        print(f'REW = {self.rew_count}')
+        
+    def plot(self):
+        x = self.trial_count
+        y = self.rew_count
+        self.line.set_xdata(x)
+        self.line.set_ydata(y)
+        self.ax.relim()
+        self.ax.autoscale_view()
+        self.fig.canvas.draw()
+        plt.pause(0.01)
 
 class TimerData:
     "Initialize class variables"
