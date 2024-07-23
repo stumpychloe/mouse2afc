@@ -2,9 +2,11 @@ import logging
 
 import time
 
-from mouse2afc.data import Data
+from mouse2afc.data import Data,CustomData
 from mouse2afc.state_matrix import StateMatrix
 from mouse2afc.task_parameters import TaskParameters
+
+import matplotlib.pyplot as plt
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +48,8 @@ class Mouse2AFC:
         self._data.custom.assign_future_trials(START_FROM,NUM_TRIALS_TO_GENERATE)
         self._data.custom.generate_next_trial(i_trial)
         self._bpod.softcode_handler_function = self.my_softcode_handler
+        plt.ion()
+        self._data.custom.plot()
         while True:
             logger.error('Before StateMatrix()')
             sma = StateMatrix(
@@ -56,4 +60,8 @@ class Mouse2AFC:
             if not self._bpod.run_state_machine(sma):
                 break
             self._data.custom.update(i_trial)
+            self._data.custom.plot()
             i_trial += 1
+        plt.ioff()
+        plt.show()
+
