@@ -3,6 +3,7 @@ import math
 
 from  mouse2afc.definitions.brain_region import BrainRegion
 from  mouse2afc.definitions.experiment import ExperimentType
+from  mouse2afc.definitions.blocker import Block
 from  mouse2afc.definitions.feedback_delay_selection import FeedbackDelaySelection
 from  mouse2afc.definitions.incorrect_choice_signal_type import IncorrectChoiceSignalType
 from  mouse2afc.definitions.iti_signal_type import ITISignalType
@@ -31,6 +32,7 @@ correct_bias = True
 current_stim = 0
 primary_experiment_type = ExperimentType.light_intensity
 secondary_experiment_type = ExperimentType.no_stimulus
+block_type = Block.no_inverse
 feedback_delay_max = 1.5
 feedback_delay_min = 0.5
 feedback_delay = feedback_delay_min
