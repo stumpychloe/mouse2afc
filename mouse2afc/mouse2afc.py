@@ -26,6 +26,7 @@ START_FROM = 0
 class Mouse2AFC:
     def __init__(self, bpod, config_file=None):
         self._bpod = bpod
+        logger.debug('Initializing TaskParameters')
         self._task_parameters = TaskParameters(
             file_=config_file).task_parameters
         self._data = Data(self._bpod.session, self._task_parameters)
@@ -49,7 +50,8 @@ class Mouse2AFC:
         self._data.custom.generate_next_trial(i_trial)
         self._bpod.softcode_handler_function = self.my_softcode_handler
         plt.ion()
-        self._data.custom.plot()
+        self._data.custom.plot_water()
+        self._data.custom.plot_time()
         while True:
             logger.error('Before StateMatrix()')
             sma = StateMatrix(
@@ -60,7 +62,8 @@ class Mouse2AFC:
             if not self._bpod.run_state_machine(sma):
                 break
             self._data.custom.update(i_trial)
-            self._data.custom.plot()
+            self._data.custom.plot_water()
+            self._data.custom.plot_time()
             i_trial += 1
         plt.ioff()
         plt.show()
