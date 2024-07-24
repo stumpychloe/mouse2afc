@@ -100,9 +100,6 @@ class CustomData:
         self.trials = Trials(task_parameters)
         self.DVs_already_generated = 0
 
-        config_file=None
-        self._task_parameters = TaskParameters(
-        file_=config_file).task_parameters
 
         #plot
         self.mot1 = 0
@@ -110,16 +107,28 @@ class CustomData:
         self.reward = 0
         self.trial = 0
         self.total = 0
+        self.trial_duration = 0
+        self.time_start = 0
+        self.time_end = 0
+        self.tot_time = 0
+        self.time_count = []
         self.rew_count = []
         self.trial_count = []
 
         self.fig, self.ax = plt.subplots()
         self.line, = self.ax.plot([], [], label="Water",marker='o', linestyle='-', color='b')
-        print(f'self.line type: {type(self.line)}')
         self.ax.set_xlabel("Trials")
         self.ax.set_ylabel("Water Amount")
         self.ax.set_title("Trials vs. Amount of Water Delivered")
         self.ax.legend()
+
+        self.fig_2, self.ax_2 = plt.subplots()
+        self.line_2, = self.ax_2.plot([], [], label="Time",marker='o', linestyle='-', color='b')
+        self.ax_2.set_xlabel("Trials")
+        self.ax_2.set_ylabel("Amount of time")
+        self.ax_2.set_title("Trials vs. Amount of Time")
+        self.ax_2.legend()
+        
         plt.ion()
         plt.show()
 
@@ -710,6 +719,10 @@ class CustomData:
 
         self.timer.custom_finalize_update[i_trial] = time.time()
 
+        self.trial_duration = self.timer.custom_finalize_update[i_trial] - self.timer.custom_initialize[i_trial]
+        self.time_count.append(self.trial_duration)
+        print(f'TIME = {self.time_count}')
+       
         # Update RDK GUI  #TODO:Figure out where this goes
         self.task_parameters.omega_table.columns.rdk = [
             (value - 50) * 2
@@ -755,9 +768,9 @@ class CustomData:
         # GUI sync doesn't complain
         self.task_parameters.is_catch = iff(
             self.trials.catch_trial[i_trial + 1], 'true', 'false')
-        reward_amount = self._task_parameters.get('reward_amount', 'default_value')
-        prestim_reward_amount = self._task_parameters.get('pre_stim_delay_cntr_reward', 'default_value')
-        center_reward_amount = self._task_parameters.get('center_port_rew_amount', 'default_value')
+        reward_amount = self.task_parameters.get('reward_amount', 'default_value')
+        prestim_reward_amount = self.task_parameters.get('pre_stim_delay_cntr_reward', 'default_value')
+        center_reward_amount = self.task_parameters.get('center_port_rew_amount', 'default_value')
         if 'Reward' in states_visited_this_trial_names:
             self.reward += (1 * reward_amount)
         if 'PreStimReward' in states_visited_this_trial_names:
@@ -766,13 +779,14 @@ class CustomData:
             self.mot2 += (1 * center_reward_amount)
         if 'ITI_Signal' in states_visited_this_trial_names:
             self.trial += 1
+        self.tot_time = self.time_end - self.time_start
         self.total = self.reward + self.mot1 + self.mot2
         self.rew_count.append(self.total)
         self.trial_count.append(self.trial)
         print(f'TRI = {self.trial_count}')
         print(f'REW = {self.rew_count}')
         
-    def plot(self):
+    def plot_water(self):
         x = self.trial_count
         y = self.rew_count
         self.line.set_xdata(x)
@@ -780,6 +794,16 @@ class CustomData:
         self.ax.relim()
         self.ax.autoscale_view()
         self.fig.canvas.draw()
+        plt.pause(0.01)
+
+    def plot_time(self):
+        x2 = self.trial_count
+        y2 = self.time_count
+        self.line_2.set_xdata(x2)
+        self.line_2.set_ydata(y2)
+        self.ax_2.relim()
+        self.ax_2.autoscale_view()
+        self.fig_2.canvas.draw()
         plt.pause(0.01)
 
 class TimerData:
